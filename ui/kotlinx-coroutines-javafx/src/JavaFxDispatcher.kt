@@ -146,9 +146,14 @@ private object PlatformInitializer {
                 // Toolkit is already initialized -> success, return
                 Unit
             } else { // Fallback to Java 8 API
-                Class.forName("com.sun.javafx.application.PlatformImpl")
-                    .getMethod("startup", java.lang.Runnable::class.java)
-                    .invoke(null, runnable)
+                val cls = Class.forName("com.sun.javafx.application.PlatformImpl")
+                try {
+                    cls.getMethod("startup", java.lang.Runnable::class.java, Boolean::class.java)
+                            .invoke(null, runnable, true)
+                } catch (e: NoSuchMethodException) {
+                    cls.getMethod("startup", java.lang.Runnable::class.java)
+                            .invoke(null, runnable)
+                }
             }
         }.isSuccess
     }
